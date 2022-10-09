@@ -64,17 +64,17 @@ func main() {
 		panic(err9)
 	}
 	//os.Args[10] is the canvas width
-	canvasWidth, err10 := strconv.Atoi(os.Args[10])
+	timeStep, err10 := strconv.ParseFloat(os.Args[10], 64)
 	if err10 != nil {
 		panic(err10)
 	}
 	//os.Args[11] is how often to make a canvas
-	imageFrequency, err11 := strconv.Atoi(os.Args[11])
+	canvasWidth, err11 := strconv.Atoi(os.Args[11])
 	if err11 != nil {
 		panic(err11)
 	}
 	//os.Args[9] is going to be cohesion factor
-	timeStep, err12 := strconv.ParseFloat(os.Args[12], 64)
+	imageFrequency, err12 := strconv.Atoi(os.Args[12])
 	if err12 != nil {
 		panic(err12)
 	}
