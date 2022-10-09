@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 )
@@ -35,15 +36,12 @@ func UpdateSky(initialSky Sky, time float64) Sky {
 	// (this statement has to be updated with a dedicated function to
 	// copy the Sky object)
 	newSky := CopySky(initialSky)
-
 	// now range over the Boids in the Sky object and update their fields
-
 	for i := range newSky.boids {
 		newSky.boids[i].acceleration = UpdateAcceleration(initialSky, newSky.boids[i])
 		newSky.boids[i].velocity = UpdateVelocity(newSky.boids[i], time, initialSky.maxBoidSpeed)
 		newSky.boids[i].position = UpdatePosition(newSky.boids[i], time, initialSky.width)
 	}
-
 	return newSky
 }
 
@@ -73,86 +71,57 @@ func UpdateAcceleration(currentSky Sky, b Boid) OrderedPair {
 // proximityFactor
 
 func ComputeNetForce(currentSky Sky, b Boid) OrderedPair {
+	numBoidsAffected := 0
 	var netForce OrderedPair
-	var numBoidsAffected int
-	boids := currentSky.boids
 
-	for i := range boids {
+	for _, i := range currentSky.boids {
+		dist := Distance(b.position, i.position)
+		fmt.Println(dist)
 		//only do a force computation if current boid is not the input Boid
-		if boids[i] != b {
-
-			force := ComputeForce(b,
-				boids[i],
-				currentSky.proximity,
-				currentSky.separationFactor,
-				currentSky.alignmentFactor,
-				currentSky.cohesionFactor)
-
-			if Distance(boids[i].position, b.position) <= currentSky.proximity {
-				numBoidsAffected++
-			}
-			//now add its components into net force components
-			netForce.x += force.x
-			netForce.y += force.y
+		if i != b && dist < currentSky.proximity {
+			// compute the three rules
+			sepForce := SeparationForce(b, i, currentSky.separationFactor)
+			alnForce := AlignmentForce(b, i, currentSky.alignmentFactor)
+			cohForce := CohesionForce(b, i, currentSky.cohesionFactor)
+			// add to netForce
+			netForce.x += sepForce.x + alnForce.x + cohForce.x
+			netForce.y += sepForce.y + alnForce.y + cohForce.y
+			// add 1 to boids counter
+			numBoidsAffected++
+			// fmt.Println(i, numBoidsAffected, dist, separationForce, alignmentForce, cohesionForce)
 		}
 	}
-	return netForce
-}
-
-// ComputeForce
-// Input: Two Boid objects
-// Output:
-
-func ComputeForce(b1, b2 Boid, proximity, separationFactor, alignmentFactor, cohesionFactor float64) OrderedPair {
-	var force OrderedPair
-	var separationForce, alignmentForce, cohesionForce OrderedPair
-
-	// values required for force computation
-	dist := Distance(b1.position, b2.position)
-	deltaX := b1.position.x - b2.position.x
-	deltaY := b1.position.y - b2.position.y
-	vel := b2.velocity
-
-	if dist < proximity { // only do a force computation if current Boid is within the
-		// input Boid's range
-
-		separationForce = SeparationForce(separationFactor, deltaX, deltaY, dist)
-		alignmentForce = AlignmentForce(alignmentFactor, vel.x, vel.y, dist)
-		cohesionForce = CohesionForce(cohesionFactor, deltaX, deltaY, dist)
-
+	if numBoidsAffected != 0 {
+		netForce.x /= float64(numBoidsAffected)
+		netForce.y /= float64(numBoidsAffected)
 	}
-
-	force.x = separationForce.x + alignmentForce.x + cohesionForce.x
-	force.y = separationForce.y + alignmentForce.y + cohesionForce.y
-
-	return force
+	return netForce
 }
 
 // SeparationForce
 // Input:
 // Output:
 
-func SeparationForce(separationFactor, deltaX, deltaY, dist float64) OrderedPair {
-
+func SeparationForce(b1, b2 Boid, separationFactor float64) OrderedPair {
 	var sepForce OrderedPair
+	dist := Distance(b1.position, b2.position)
 
-	sepForce.x = separationFactor * -deltaX / (dist * dist)
-	sepForce.y = separationFactor * -deltaY / (dist * dist)
+	sepForce.x = separationFactor * (b2.position.x - b1.position.x) / (dist * dist)
+	sepForce.y = separationFactor * (b2.position.y - b1.position.y) / (dist * dist)
 
 	return sepForce
-
 }
 
 // AlignmentForce
 // Input:
 // Output:
 
-func AlignmentForce(alignmentFactor, velocityX, velocityY, dist float64) OrderedPair {
-
+func AlignmentForce(b1, b2 Boid, alignmentFactor float64) OrderedPair {
 	var alnForce OrderedPair
+	dist := Distance(b1.position, b2.position)
 
-	alnForce.x = alignmentFactor * velocityX / dist
-	alnForce.y = alignmentFactor * velocityY / dist
+	alnForce.x = alignmentFactor * b2.velocity.x / dist
+	alnForce.y = alignmentFactor * b2.velocity.y / dist
 
 	return alnForce
 
@@ -162,12 +131,13 @@ func AlignmentForce(alignmentFactor, velocityX, velocityY, dist float64) Ordered
 // Input:
 // Output:
 
-func CohesionForce(cohesionFactor, deltaX, deltaY, dist float64) OrderedPair {
+func CohesionForce(b1, b2 Boid, cohesionFactor float64) OrderedPair {
 
 	var cohForce OrderedPair
+	dist := Distance(b1.position, b2.position)
 
-	cohForce.x = cohesionFactor * (deltaX) / dist
-	cohForce.y = cohesionFactor * (deltaY) / dist
+	cohForce.x = cohesionFactor * (b1.position.x - b2.position.x) / dist
+	cohForce.y = cohesionFactor * (b1.position.y - b2.position.y) / dist
 
 	return cohForce
 
@@ -240,11 +210,9 @@ func Distance(p1, p2 OrderedPair) float64 {
 
 func Average(inputs []float64) float64 {
 	var sum float64
-
 	for _, i := range inputs {
 		sum += i
 	}
-
 	return sum / float64(len(inputs))
 }
 
