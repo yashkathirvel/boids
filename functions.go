@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"math"
 	"math/rand"
 )
@@ -76,13 +75,13 @@ func ComputeNetForce(currentSky Sky, b Boid) OrderedPair {
 
 	for _, i := range currentSky.boids {
 		dist := Distance(b.position, i.position)
-		fmt.Println(dist)
+		// fmt.Println(dist)
 		//only do a force computation if current boid is not the input Boid
 		if i != b && dist < currentSky.proximity {
 			// compute the three rules
-			sepForce := SeparationForce(i, b, currentSky.separationFactor)
+			sepForce := SeparationForce(b, i, currentSky.separationFactor)
 			alnForce := AlignmentForce(b, i, currentSky.alignmentFactor)
-			cohForce := CohesionForce(i, b, currentSky.cohesionFactor)
+			cohForce := CohesionForce(b, i, currentSky.cohesionFactor)
 			// add to netForce
 			netForce.x += sepForce.x + alnForce.x + cohForce.x
 			netForce.y += sepForce.y + alnForce.y + cohForce.y
@@ -106,8 +105,8 @@ func SeparationForce(b1, b2 Boid, separationFactor float64) OrderedPair {
 	var sepForce OrderedPair
 	dist := Distance(b1.position, b2.position)
 
-	sepForce.x = separationFactor * (b2.position.x - b1.position.x) / (dist * dist)
-	sepForce.y = separationFactor * (b2.position.y - b1.position.y) / (dist * dist)
+	sepForce.x = separationFactor * (b1.position.x - b2.position.x) / (dist * dist)
+	sepForce.y = separationFactor * (b1.position.y - b2.position.y) / (dist * dist)
 
 	return sepForce
 }
@@ -136,8 +135,8 @@ func CohesionForce(b1, b2 Boid, cohesionFactor float64) OrderedPair {
 	var cohForce OrderedPair
 	dist := Distance(b1.position, b2.position)
 
-	cohForce.x = cohesionFactor * (b1.position.x - b2.position.x) / dist
-	cohForce.y = cohesionFactor * (b1.position.y - b2.position.y) / dist
+	cohForce.x = cohesionFactor * (b2.position.x - b1.position.x) / dist
+	cohForce.y = cohesionFactor * (b2.position.y - b1.position.y) / dist
 
 	return cohForce
 
