@@ -173,29 +173,23 @@ func UpdateVelocity(b Boid, time, maxBoidSpeed float64) OrderedPair {
 
 func UpdatePosition(b Boid, time, skyWidth float64) OrderedPair {
 	var pos OrderedPair
-
 	// update position fields on Boid
 	pos.x = 0.5*b.acceleration.x*time*time + b.velocity.x*time + b.position.x
 	pos.y = 0.5*b.acceleration.y*time*time + b.velocity.y*time + b.position.y
-
 	// check if position is out of bounds
 	// this will simulate the torus
 	if pos.x > skyWidth { // x component exceeds the sky width
 		pos.x -= skyWidth
 	}
-
 	if pos.x < 0 { // x component is negative
 		pos.x += skyWidth
 	}
-
 	if pos.y > skyWidth { // y component exceeds the sky width
 		pos.y -= skyWidth
 	}
-
 	if pos.y < 0 { // y component is negative
 		pos.y += skyWidth
 	}
-
 	return pos
 }
 
@@ -236,21 +230,18 @@ func CreateSky(skyWidth float64, numBoids int, initialSpeed float64, maxBoidSpee
 
 	// now initialize all of the Boids
 	for i := range newSky.boids {
-		// init random y position
-		randomPosition := rand.Float64()*(skyWidth-0.0) + 0.0
-
+		// init random positions
+		randomPositionX := rand.Float64()*(skyWidth-0.0) + 0.0
+		randomPositionY := rand.Float64()*(skyWidth-0.0) + 0.0
 		// init random angle
 		min := 0.0
 		max := 2 * math.Pi
 		randomAngle := rand.Float64()*(max-min) + min
-
 		// fill in the fields
-
 		newSky.boids[i].velocity.x = initialSpeed * math.Cos(randomAngle)
 		newSky.boids[i].velocity.y = initialSpeed * math.Sin(randomAngle)
-		newSky.boids[i].position.x = skyWidth / 2
-		newSky.boids[i].position.y = randomPosition
-		// newSky.boids[i].acceleration = UpdateAcceleration(newSky, newSky.boids[i])
+		newSky.boids[i].position.x = randomPositionX
+		newSky.boids[i].position.y = randomPositionY
 	}
 	return newSky
 }
