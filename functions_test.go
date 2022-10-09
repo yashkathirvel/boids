@@ -355,7 +355,7 @@ func TestComputeNetForce(t *testing.T) {
 
 				b: Boid{position: OrderedPair{241.864115, 376.203635}, velocity: OrderedPair{-0.511419, -0.859332}, acceleration: OrderedPair{0.0, 0.0}},
 			},
-			want: OrderedPair{-0.5913, -0.0514},
+			want: OrderedPair{-0.591, -0.051},
 		},
 	}
 

@@ -80,9 +80,9 @@ func ComputeNetForce(currentSky Sky, b Boid) OrderedPair {
 		//only do a force computation if current boid is not the input Boid
 		if i != b && dist < currentSky.proximity {
 			// compute the three rules
-			sepForce := SeparationForce(b, i, currentSky.separationFactor)
+			sepForce := SeparationForce(i, b, currentSky.separationFactor)
 			alnForce := AlignmentForce(b, i, currentSky.alignmentFactor)
-			cohForce := CohesionForce(b, i, currentSky.cohesionFactor)
+			cohForce := CohesionForce(i, b, currentSky.cohesionFactor)
 			// add to netForce
 			netForce.x += sepForce.x + alnForce.x + cohForce.x
 			netForce.y += sepForce.y + alnForce.y + cohForce.y
